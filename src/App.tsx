@@ -31,6 +31,14 @@ export default function App() {
 		);
 	}
 
+	function handleClearList() {
+		const confirmed = window.confirm(
+			"Are you sure you want to delete all items?"
+		);
+
+		confirmed && setItems([]);
+	}
+
 	return (
 		<div className="app">
 			<Logo />
@@ -39,6 +47,7 @@ export default function App() {
 				items={items}
 				onDeleteItem={handleDeleteItem}
 				onToggleItem={handleToggleItem}
+				onClearList={handleClearList}
 			/>
 			<Stats items={items} />
 		</div>
@@ -76,12 +85,7 @@ function Form({
 	return (
 		<form className="add-form" onSubmit={handleSubmit}>
 			<h3>What do you need for your 😍 trip?</h3>
-			<select
-				name=""
-				id=""
-				value={quantity}
-				onChange={(e) => setQuantity(+e.target.value)}
-			>
+			<select value={quantity} onChange={(e) => setQuantity(+e.target.value)}>
 				{Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
 					<option value={num} key={num}>
 						{num}
@@ -103,15 +107,30 @@ function PackingList({
 	items,
 	onDeleteItem,
 	onToggleItem,
+	onClearList,
 }: {
 	items: itemT[];
 	onDeleteItem: (id: number) => void;
 	onToggleItem: (id: number) => void;
+	onClearList: () => void;
 }) {
+	const [sortBy, setSortBy] = useState("input");
+
+	let sortedItems;
+	if (sortBy === "input") sortedItems = items;
+	else if (sortBy === "description")
+		sortedItems = items
+			.slice()
+			.sort((a, b) => a.description.localeCompare(b.description));
+	else
+		sortedItems = items
+			.slice()
+			.sort((a, b) => Number(a.packed) - Number(b.packed));
+
 	return (
 		<div className="list">
 			<ul>
-				{items.map((i, idx) => (
+				{sortedItems.map((i, idx) => (
 					<Item
 						item={i}
 						key={idx}
@@ -120,6 +139,14 @@ function PackingList({
 					/>
 				))}
 			</ul>
+			<div className="actions">
+				<select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+					<option value="input">Sort by input order</option>
+					<option value="description">Sort by input description</option>
+					<option value="packed">Sort by packed status</option>
+				</select>
+				<button onClick={onClearList}>Clear List</button>
+			</div>
 		</div>
 	);
 }

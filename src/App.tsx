@@ -13,11 +13,16 @@ type itemT = {
 };
 
 export default function App() {
+	const [items, setItems] = useState<itemT[]>([]);
+	function handleAddItems(newItem: itemT) {
+		setItems((prev) => [...prev, newItem]);
+	}
+
 	return (
 		<div className="app">
 			<Logo />
-			<Form />
-			<PackingList />
+			<Form handleAddItems={handleAddItems} />
+			<PackingList items={items} />
 			<Stats />
 		</div>
 	);
@@ -27,9 +32,14 @@ function Logo() {
 	return <h1>🏝️ Far Away 🎧</h1>;
 }
 
-function Form() {
+function Form({
+	handleAddItems,
+}: {
+	handleAddItems: (newItem: itemT) => void;
+}) {
 	const [text, setText] = useState("");
 	const [quantity, setQuantity] = useState(1);
+
 	function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		if (!text) return;
@@ -40,6 +50,7 @@ function Form() {
 			quantity,
 			packed: false,
 		};
+		handleAddItems(newItem);
 
 		setText("");
 		setQuantity(1);
@@ -71,11 +82,11 @@ function Form() {
 	);
 }
 
-function PackingList() {
+function PackingList({ items }: { items: itemT[] }) {
 	return (
 		<div className="list">
 			<ul>
-				{initialItems.map((i, idx) => (
+				{items.map((i, idx) => (
 					<Item item={i} key={idx} />
 				))}
 			</ul>
